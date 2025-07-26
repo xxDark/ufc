@@ -17,6 +17,8 @@ import java.util.Set;
 /// will call {@link FileChannelImpl#setUninterruptible()} for us.
 ///
 /// Maybe it would be a great idea for JDK maintainers to give us access to uninterruptible channels for files? :)
+///
+/// See [8316882: (zipfs) ZipFileSystem closed by interrupt is unexpected](https://bugs.openjdk.org/browse/JDK-8316882).
 public final class UninterruptibleChannels {
 	private UninterruptibleChannels() {
 	}
