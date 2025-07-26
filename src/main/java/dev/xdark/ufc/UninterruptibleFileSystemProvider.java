@@ -137,6 +137,6 @@ final class UninterruptibleFileSystemProvider extends FileSystemProvider {
 	}
 
 	private static Path unwrap(Path path) {
-		return ((UninterruptiblePath) path).delegate;
+		return UninterruptiblePath.unwrap(path);
 	}
 }

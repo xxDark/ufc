@@ -2,7 +2,6 @@ package dev.xdark.ufc;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.channels.ByteChannel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileSystem;

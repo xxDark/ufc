@@ -10,7 +10,7 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 
 final class UninterruptiblePath implements Path {
-	final Path delegate;
+	private final Path delegate;
 	private final UninterruptibleFileSystem fileSystem;
 
 	UninterruptiblePath(Path delegate, UninterruptibleFileSystem fileSystem) {
@@ -132,5 +132,9 @@ final class UninterruptiblePath implements Path {
 	@Override
 	public String toString() {
 		return delegate.toString();
+	}
+
+	static Path unwrap(Path path) {
+		return ((UninterruptiblePath) path).delegate;
 	}
 }

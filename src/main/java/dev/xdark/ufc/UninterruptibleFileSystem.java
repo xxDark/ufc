@@ -62,7 +62,7 @@ final class UninterruptibleFileSystem extends FileSystem {
 
 				@Override
 				public Path next() {
-					return new UninterruptiblePath(iterator.next());
+					return new UninterruptiblePath(iterator.next(), UninterruptibleFileSystem.this);
 				}
 			};
 		};
