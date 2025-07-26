@@ -2,6 +2,7 @@ package dev.xdark.ufc;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.AccessMode;
 import java.nio.file.CopyOption;
@@ -45,6 +46,17 @@ final class UninterruptibleFileSystemProvider extends FileSystemProvider {
 	@Override
 	public Path getPath(URI uri) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options,
+			FileAttribute<?>... attrs) throws IOException {
+		var impl = (UninterruptiblePath) path;
+		if (impl.restoreOriginalOptions) {
+			options = new HashSet<>(Arrays.asList(impl.originalOptions));
+		}
+		Path delegate = impl.delegate;
+		return (FileChannel) (impl.channel = delegate.getFileSystem().provider().newFileChannel(delegate, options, attrs));
 	}
 
 	@Override
