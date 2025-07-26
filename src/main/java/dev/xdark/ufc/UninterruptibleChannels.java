@@ -2,6 +2,7 @@ package dev.xdark.ufc;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
@@ -21,11 +22,30 @@ public final class UninterruptibleChannels {
 	}
 
 	/**
+	 * @throws IllegalStateException If {@link SeekableByteChannel} could not be extracted.
+	 * @see Files#newByteChannel(Path, OpenOption...)
+	 */
+	public static SeekableByteChannel newByteChannel(Path path, OpenOption... options) throws IOException {
+		var pathWrapper = new CompactUninterruptiblePath(path, options, new CompactUninterruptibleFileSystem(path.getFileSystem()));
+		pathWrapper.restoreOriginalOptions = true;
+		Files.newInputStream(pathWrapper);
+		return pathWrapper.asByteChannel();
+	}
+
+	/**
+	 * @throws IllegalStateException If {@link SeekableByteChannel} could not be extracted.
+	 * @see Files#newByteChannel(Path, OpenOption...)
+	 */
+	public static SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options) throws IOException {
+		return newByteChannel(path, options.toArray(new OpenOption[0]));
+	}
+
+	/**
 	 * @throws IllegalStateException If {@link FileChannel} could not be extracted.
 	 * @see FileChannel#open(Path, OpenOption...)
 	 */
-	public static FileChannel open(Path path, OpenOption... options) throws IOException {
-		var pathWrapper = new UninterruptiblePath(path, options, new UninterruptibleFileSystem(path.getFileSystem()));
+	public static FileChannel newFileChannel(Path path, OpenOption... options) throws IOException {
+		var pathWrapper = new CompactUninterruptiblePath(path, options, new CompactUninterruptibleFileSystem(path.getFileSystem()));
 		pathWrapper.restoreOriginalOptions = true;
 		Files.newInputStream(pathWrapper);
 		return pathWrapper.asFileChannel();
@@ -35,8 +55,8 @@ public final class UninterruptibleChannels {
 	 * @throws IllegalStateException If {@link FileChannel} could not be extracted.
 	 * @see FileChannel#open(Path, OpenOption...)
 	 */
-	public static FileChannel open(Path path, Set<? extends OpenOption> options) throws IOException {
-		return open(path, options.toArray(new OpenOption[0]));
+	public static FileChannel newFileChannel(Path path, Set<? extends OpenOption> options) throws IOException {
+		return newFileChannel(path, options.toArray(new OpenOption[0]));
 	}
 
 	/**
@@ -44,7 +64,7 @@ public final class UninterruptibleChannels {
 	 * @see Files#newInputStream(Path, OpenOption...)
 	 */
 	public static FileChannel newInputStream(Path path, OpenOption... options) throws IOException {
-		var pathWrapper = new UninterruptiblePath(path, options, new UninterruptibleFileSystem(path.getFileSystem()));
+		var pathWrapper = new CompactUninterruptiblePath(path, options, new CompactUninterruptibleFileSystem(path.getFileSystem()));
 		Files.newInputStream(pathWrapper, options);
 		return pathWrapper.asFileChannel();
 	}
@@ -62,7 +82,7 @@ public final class UninterruptibleChannels {
 	 * @see Files#newOutputStream(Path, OpenOption...)
 	 */
 	public static FileChannel newOutputStream(Path path, OpenOption... options) throws IOException {
-		var pathWrapper = new UninterruptiblePath(path, options, new UninterruptibleFileSystem(path.getFileSystem()));
+		var pathWrapper = new CompactUninterruptiblePath(path, options, new CompactUninterruptibleFileSystem(path.getFileSystem()));
 		Files.newOutputStream(pathWrapper, options);
 		return pathWrapper.asFileChannel();
 	}

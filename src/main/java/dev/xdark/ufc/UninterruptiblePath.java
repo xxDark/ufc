@@ -2,11 +2,8 @@ package dev.xdark.ufc;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.channels.FileChannel;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.LinkOption;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
@@ -15,23 +12,20 @@ import java.nio.file.WatchService;
 final class UninterruptiblePath implements Path {
 	final Path delegate;
 	private final UninterruptibleFileSystem fileSystem;
-	final OpenOption[] originalOptions;
-	SeekableByteChannel channel;
-	boolean restoreOriginalOptions;
 
-	FileChannel asFileChannel() throws IOException {
-		var channel = this.channel;
-		if (!(channel instanceof FileChannel)) {
-			channel.close();
-			throw new IllegalStateException("Unable to retrieve FileChannel");
-		}
-		return (FileChannel) channel;
+	UninterruptiblePath(Path delegate, UninterruptibleFileSystem fileSystem) {
+		this.delegate = delegate;
+		this.fileSystem = fileSystem;
 	}
 
-	UninterruptiblePath(Path delegate, OpenOption[] openOptions, UninterruptibleFileSystem fileSystem) {
-		this.delegate = delegate;
-		originalOptions = openOptions.clone();
-		this.fileSystem = fileSystem;
+	UninterruptiblePath(Path delegate) {
+		this(delegate, new UninterruptibleFileSystem(delegate.getFileSystem()));
+	}
+
+	private Path wrap(Path path) {
+		if (path != null)
+			path = new UninterruptiblePath(path, fileSystem);
+		return path;
 	}
 
 	@Override
@@ -41,87 +35,102 @@ final class UninterruptiblePath implements Path {
 
 	@Override
 	public boolean isAbsolute() {
-		throw new UnsupportedOperationException();
+		return delegate.isAbsolute();
 	}
 
 	@Override
 	public Path getRoot() {
-		throw new UnsupportedOperationException();
+		return wrap(delegate.getRoot());
 	}
 
 	@Override
 	public Path getFileName() {
-		throw new UnsupportedOperationException();
+		return wrap(delegate.getFileName());
 	}
 
 	@Override
 	public Path getParent() {
-		throw new UnsupportedOperationException();
+		return wrap(delegate.getParent());
 	}
 
 	@Override
 	public int getNameCount() {
-		throw new UnsupportedOperationException();
+		return delegate.getNameCount();
 	}
 
 	@Override
 	public Path getName(int index) {
-		throw new UnsupportedOperationException();
+		return wrap(delegate.getName(index));
 	}
 
 	@Override
 	public Path subpath(int beginIndex, int endIndex) {
-		throw new UnsupportedOperationException();
+		return wrap(delegate.subpath(beginIndex, endIndex));
 	}
 
 	@Override
 	public boolean startsWith(Path other) {
-		throw new UnsupportedOperationException();
+		return delegate.startsWith(other);
 	}
 
 	@Override
 	public boolean endsWith(Path other) {
-		throw new UnsupportedOperationException();
+		return delegate.endsWith(other);
 	}
 
 	@Override
 	public Path normalize() {
-		throw new UnsupportedOperationException();
+		return wrap(delegate.normalize());
 	}
 
 	@Override
 	public Path resolve(Path other) {
-		throw new UnsupportedOperationException();
+		return wrap(delegate.resolve(other));
 	}
 
 	@Override
 	public Path relativize(Path other) {
-		throw new UnsupportedOperationException();
+		return wrap(delegate.relativize(other));
 	}
 
 	@Override
 	public URI toUri() {
-		throw new UnsupportedOperationException();
+		return delegate.toUri();
 	}
 
 	@Override
 	public Path toAbsolutePath() {
-		throw new UnsupportedOperationException();
+		return wrap(delegate.toAbsolutePath());
 	}
 
 	@Override
 	public Path toRealPath(LinkOption... options) throws IOException {
-		throw new UnsupportedOperationException();
+		return wrap(delegate.toRealPath(options));
 	}
 
 	@Override
 	public WatchKey register(WatchService watcher, WatchEvent.Kind<?>[] events,
 			WatchEvent.Modifier... modifiers) throws IOException {
-		throw new UnsupportedOperationException();
+		return delegate.register(watcher, events, modifiers);
 	}
 
 	@Override
 	public int compareTo(Path other) {
-		throw new UnsupportedOperationException();
+		return delegate.compareTo(other);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return delegate.equals(obj);
+	}
+
+	@Override
+	public int hashCode() {
+		return delegate.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return delegate.toString();
 	}
 }

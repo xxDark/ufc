@@ -16,13 +16,15 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-final class UninterruptibleFileSystemProvider extends FileSystemProvider {
+final class CompactUninterruptibleFileSystemProvider extends FileSystemProvider {
 	private final FileSystemProvider delegate;
 
-	UninterruptibleFileSystemProvider(FileSystemProvider delegate) {
+	CompactUninterruptibleFileSystemProvider(FileSystemProvider delegate) {
 		this.delegate = delegate;
 	}
 
@@ -33,106 +35,105 @@ final class UninterruptibleFileSystemProvider extends FileSystemProvider {
 
 	@Override
 	public FileSystem newFileSystem(URI uri, Map<String, ?> env) throws IOException {
-		return new UninterruptibleFileSystem(this, delegate.newFileSystem(uri, env));
-	}
-
-	@Override
-	public FileSystem newFileSystem(Path path, Map<String, ?> env) throws IOException {
-		return new UninterruptibleFileSystem(this, delegate.newFileSystem(path, env));
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public FileSystem getFileSystem(URI uri) {
-		return new UninterruptibleFileSystem(this, delegate.getFileSystem(uri));
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Path getPath(URI uri) {
-		return new UninterruptiblePath(delegate.getPath(uri));
-	}
-
-	@Override
-	public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options,
-			FileAttribute<?>... attrs) throws IOException {
-		if (attrs.length != 0) {
-			throw new UnsupportedOperationException();
-		}
-		return UninterruptibleChannels.newByteChannel(((UninterruptiblePath) path).delegate, options);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options,
 			FileAttribute<?>... attrs) throws IOException {
-		if (attrs.length != 0) {
-			throw new UnsupportedOperationException();
+		var impl = (CompactUninterruptiblePath) path;
+		if (impl.restoreOriginalOptions) {
+			options = new HashSet<>(Arrays.asList(impl.originalOptions));
 		}
-		return UninterruptibleChannels.newFileChannel(((UninterruptiblePath) path).delegate, options);
+		Path delegate = impl.delegate;
+		return (FileChannel) (impl.channel = delegate.getFileSystem().provider().newFileChannel(delegate, options, attrs));
+	}
+
+	@Override
+	public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options,
+			FileAttribute<?>... attrs) throws IOException {
+		var impl = (CompactUninterruptiblePath) path;
+		if (impl.restoreOriginalOptions) {
+			options = new HashSet<>(Arrays.asList(impl.originalOptions));
+		}
+		Path delegate = impl.delegate;
+		return impl.channel = delegate.getFileSystem().provider().newByteChannel(delegate, options, attrs);
 	}
 
 	@Override
 	public DirectoryStream<Path> newDirectoryStream(Path dir,
 			DirectoryStream.Filter<? super Path> filter) throws IOException {
-		return delegate.newDirectoryStream(dir, filter);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
-		delegate.createDirectory(dir, attrs);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void delete(Path path) throws IOException {
-		delegate.delete(path);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void copy(Path source, Path target, CopyOption... options) throws IOException {
-		delegate.copy(source, target, options);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void move(Path source, Path target, CopyOption... options) throws IOException {
-		delegate.move(source, target, options);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public boolean isSameFile(Path path, Path path2) throws IOException {
-		return delegate.isSameFile(path, path2);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public boolean isHidden(Path path) throws IOException {
-		return delegate.isHidden(path);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public FileStore getFileStore(Path path) throws IOException {
-		return delegate.getFileStore(path);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void checkAccess(Path path, AccessMode... modes) throws IOException {
-		delegate.checkAccess(path, modes);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
-		return delegate.getFileAttributeView(path, type, options);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type,
 			LinkOption... options) throws IOException {
-		return delegate.readAttributes(path, type, options);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
-		return delegate.readAttributes(path, attributes, options);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException {
-		delegate.setAttribute(path, attribute, value, options);
+		throw new UnsupportedOperationException();
 	}
 }

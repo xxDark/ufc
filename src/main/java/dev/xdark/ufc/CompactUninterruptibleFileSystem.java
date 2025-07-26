@@ -8,20 +8,15 @@ import java.nio.file.PathMatcher;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
-import java.util.Iterator;
 import java.util.Set;
 
-final class UninterruptibleFileSystem extends FileSystem {
-	private final UninterruptibleFileSystemProvider provider;
+final class CompactUninterruptibleFileSystem extends FileSystem {
 	private final FileSystem delegate;
+	final CompactUninterruptibleFileSystemProvider provider;
 
-	UninterruptibleFileSystem(UninterruptibleFileSystemProvider provider, FileSystem delegate) {
-		this.provider = provider;
+	CompactUninterruptibleFileSystem(FileSystem delegate) {
 		this.delegate = delegate;
-	}
-
-	UninterruptibleFileSystem(FileSystem delegate) {
-		this(new UninterruptibleFileSystemProvider(delegate.provider()), delegate);
+		provider = new CompactUninterruptibleFileSystemProvider(delegate.provider());
 	}
 
 	@Override
@@ -31,7 +26,6 @@ final class UninterruptibleFileSystem extends FileSystem {
 
 	@Override
 	public void close() throws IOException {
-		delegate.close();
 	}
 
 	@Override
@@ -51,50 +45,36 @@ final class UninterruptibleFileSystem extends FileSystem {
 
 	@Override
 	public Iterable<Path> getRootDirectories() {
-		Iterable<Path> rootDirectories = delegate.getRootDirectories();
-		return () -> {
-			Iterator<Path> iterator = rootDirectories.iterator();
-			return new Iterator<>() {
-				@Override
-				public boolean hasNext() {
-					return iterator.hasNext();
-				}
-
-				@Override
-				public Path next() {
-					return new UninterruptiblePath(iterator.next());
-				}
-			};
-		};
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Iterable<FileStore> getFileStores() {
-		return delegate.getFileStores();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Set<String> supportedFileAttributeViews() {
-		return delegate.supportedFileAttributeViews();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Path getPath(String first, String... more) {
-		return new UninterruptiblePath(delegate.getPath(first, more), this);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public PathMatcher getPathMatcher(String syntaxAndPattern) {
-		return delegate.getPathMatcher(syntaxAndPattern);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public UserPrincipalLookupService getUserPrincipalLookupService() {
-		return delegate.getUserPrincipalLookupService();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public WatchService newWatchService() throws IOException {
-		return delegate.newWatchService();
+		throw new UnsupportedOperationException();
 	}
 }
