@@ -57,7 +57,7 @@ final class UninterruptibleFileSystemProvider extends FileSystemProvider {
 		if (attrs.length != 0) {
 			throw new UnsupportedOperationException();
 		}
-		return UninterruptibleChannels.newByteChannel(((UninterruptiblePath) path).delegate, options);
+		return UninterruptibleChannels.newByteChannel(unwrap(path), options);
 	}
 
 	@Override
@@ -66,73 +66,77 @@ final class UninterruptibleFileSystemProvider extends FileSystemProvider {
 		if (attrs.length != 0) {
 			throw new UnsupportedOperationException();
 		}
-		return UninterruptibleChannels.newFileChannel(((UninterruptiblePath) path).delegate, options);
+		return UninterruptibleChannels.newFileChannel(unwrap(path), options);
 	}
 
 	@Override
 	public DirectoryStream<Path> newDirectoryStream(Path dir,
 			DirectoryStream.Filter<? super Path> filter) throws IOException {
-		return delegate.newDirectoryStream(dir, filter);
+		return delegate.newDirectoryStream(unwrap(dir), filter);
 	}
 
 	@Override
 	public void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
-		delegate.createDirectory(dir, attrs);
+		delegate.createDirectory(unwrap(dir), attrs);
 	}
 
 	@Override
 	public void delete(Path path) throws IOException {
-		delegate.delete(path);
+		delegate.delete(unwrap(path));
 	}
 
 	@Override
 	public void copy(Path source, Path target, CopyOption... options) throws IOException {
-		delegate.copy(source, target, options);
+		delegate.copy(unwrap(source), unwrap(target), options);
 	}
 
 	@Override
 	public void move(Path source, Path target, CopyOption... options) throws IOException {
-		delegate.move(source, target, options);
+		delegate.move(unwrap(source), unwrap(target), options);
 	}
 
 	@Override
 	public boolean isSameFile(Path path, Path path2) throws IOException {
-		return delegate.isSameFile(path, path2);
+		return delegate.isSameFile(unwrap(path), unwrap(path2));
 	}
 
 	@Override
 	public boolean isHidden(Path path) throws IOException {
-		return delegate.isHidden(path);
+		return delegate.isHidden(unwrap(path));
 	}
 
 	@Override
 	public FileStore getFileStore(Path path) throws IOException {
-		return delegate.getFileStore(path);
+		return delegate.getFileStore(unwrap(path));
 	}
 
 	@Override
 	public void checkAccess(Path path, AccessMode... modes) throws IOException {
-		delegate.checkAccess(path, modes);
+		delegate.checkAccess(unwrap(path), modes);
 	}
 
 	@Override
 	public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
-		return delegate.getFileAttributeView(path, type, options);
+		return delegate.getFileAttributeView(unwrap(path), type, options);
 	}
 
 	@Override
 	public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type,
 			LinkOption... options) throws IOException {
-		return delegate.readAttributes(path, type, options);
+		return delegate.readAttributes(unwrap(path), type, options);
 	}
 
 	@Override
 	public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
-		return delegate.readAttributes(path, attributes, options);
+		return delegate.readAttributes(unwrap(path), attributes, options);
 	}
 
 	@Override
 	public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException {
-		delegate.setAttribute(path, attribute, value, options);
+		delegate.setAttribute(unwrap(path), attribute, value, options);
+	}
+
+	private static Path unwrap(Path path) {
+		return ((UninterruptiblePath) path).delegate;
 	}
 }
